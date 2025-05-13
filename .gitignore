@@ -79,7 +79,7 @@ docs/_build/
 target/
 
 # Jupyter Notebook (exclude notebooks since we commit jupytext)
-.ipynb
+*.ipynb
 .ipynb_checkpoints
 
 # IPython

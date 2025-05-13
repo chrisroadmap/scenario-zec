@@ -19,7 +19,7 @@
 # - calibration v1.4.0
 # - run CO2-only
 # - ssp245, ssp370, ssp585
-# - ZEC every 5 years from 1950 to 2100, run to 2500
+# - ZEC every 5 years from 1950 to 2150, run to 2500
 
 # %%
 import os
@@ -70,14 +70,14 @@ properties = {
     },
     "CH4": {
         'type': 'ch4',
-        'input_mode': 'emissions',
+        'input_mode': 'concentration',
         'greenhouse_gas': True,
         'aerosol_chemistry_from_emissions': False,
         'aerosol_chemistry_from_concentration': False
     },
     "N2O": {
         'type': 'n2o',
-        'input_mode': 'emissions',
+        'input_mode': 'concentration',
         'greenhouse_gas': True,
         'aerosol_chemistry_from_emissions': False,
         'aerosol_chemistry_from_concentration': False
@@ -86,7 +86,7 @@ properties = {
 
 # %%
 f = {}
-for zero_year in tqdm(np.arange(1950, 2101, 5, dtype=int)):
+for zero_year in tqdm(np.arange(1950, 2151, 5, dtype=int)):
     f[zero_year] = FAIR(ch4_method='Thornhill2021')
     f[zero_year].define_time(1750, 2500, 1)
     f[zero_year].define_scenarios(scenarios)
@@ -99,10 +99,10 @@ for zero_year in tqdm(np.arange(1950, 2101, 5, dtype=int)):
 
     f[zero_year].fill_species_configs()
 
-    # set CH4 and N2O to zero. they are only here to give us something to use for the ERF
-    fill(f[zero_year].emissions, 0, specie='CH4')
-    fill(f[zero_year].emissions, 0, specie='N2O')
-
+    # set CH4 and N2O concentrations to baseline. they are only here to give us something to use for the ERF
+    fill(f[zero_year].concentration, 729.2, specie='CH4')
+    fill(f[zero_year].concentration, 270.1, specie='N2O')
+    
     # set CO2 emissions to zero after a certain year
     fill(f[zero_year].emissions, 0, specie='CO2 FFI', timepoints=np.arange(zero_year+0.5, 2500))
     fill(f[zero_year].emissions, 0, specie='CO2 AFOLU', timepoints=np.arange(zero_year+0.5, 2500))
@@ -135,8 +135,8 @@ f[zero_year].fill_from_rcmip()
 f[zero_year].fill_species_configs()
 
 # set CH4 and N2O to zero. they are only here to give us something to use for the ERF
-fill(f[zero_year].emissions, 0, specie='CH4')
-fill(f[zero_year].emissions, 0, specie='N2O')
+fill(f[zero_year].concentration, 729.2, specie='CH4')
+fill(f[zero_year].concentration, 270.1, specie='N2O')
 
 ## set CO2 emissions to zero after a certain year
 #fill(f[zero_year].emissions, 0, specie='CO2 FFI', timepoints=np.arange(zero_year+0.5, 2500))
@@ -154,6 +154,15 @@ initialise(f[zero_year].airborne_emissions, 0)
 initialise(f[zero_year].cumulative_emissions, 0)
 
 f[zero_year].run(progress=False)
+
+# %%
+pl.plot(f[1950].concentration.sel(specie='CO2', scenario='ssp245'));
+
+# %%
+pl.plot(f[1950].concentration.sel(specie='CH4', scenario='ssp245'));
+
+# %%
+pl.plot(f[1950].concentration.sel(specie='N2O', scenario='ssp245'));
 
 # %%
 pl.plot(f[1950].temperature.sel(layer=0, scenario='ssp245'));
@@ -202,13 +211,23 @@ output = np.stack(
         f[2090].temperature.sel(layer=0),
         f[2095].temperature.sel(layer=0),
         f[2100].temperature.sel(layer=0),
+        f[2105].temperature.sel(layer=0),
+        f[2110].temperature.sel(layer=0),
+        f[2115].temperature.sel(layer=0),
+        f[2120].temperature.sel(layer=0),
+        f[2125].temperature.sel(layer=0),
+        f[2130].temperature.sel(layer=0),
+        f[2135].temperature.sel(layer=0),
+        f[2140].temperature.sel(layer=0),
+        f[2145].temperature.sel(layer=0),
+        f[2150].temperature.sel(layer=0),
     ),
     axis=0
 )
 output.shape
 
 # %%
-zero_year_labels = ['none'] + [yr for yr in range(1950, 2101, 5)]
+zero_year_labels = ['none'] + [yr for yr in range(1950, 2151, 5)]
 
 # %%
 ds = xr.Dataset(
